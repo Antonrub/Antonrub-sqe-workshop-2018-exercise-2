@@ -4,102 +4,120 @@ import {parseCode} from '../src/js/code-analyzer';
 describe('The javascript parser', () => {
     it('is parsing an empty function correctly', () => {
         assert.equal(
-            JSON.stringify(parseCode('')),
-            '[]'
-        );
-    });
-
-    it('is parsing a simple variable declaration correctly', () => {
-        assert.equal(
-            JSON.stringify(parseCode('let a = 1;')),
-            '[{"line":1,"type":"Variable Declaration","name":"a","condition":null,"value":"1"}]'
-        );
-    });
-
-    it('is parsing a simple variable declaration correctly', () => {
-        assert.equal(
-            JSON.stringify(parseCode('let a = -1;')),
-            '[{"line":1,"type":"Variable Declaration","name":"a","condition":null,"value":"-1"}]'
-        );
-    });
-
-    it('is parsing a simple assignment correctly', () => {
-        assert.equal(
-            JSON.stringify(parseCode('a = x;')),
-            '[{"line":1,"type":"Assignment Expression","name":"a","condition":null,"value":null}]'
-        );
-    });
-
-    it('is parsing a simple variable declaration correctly', () => {
-        assert.equal(
-            JSON.stringify(parseCode('let a;')),
-            '[{"line":1,"type":"Variable Declaration","name":"a","condition":null,"value":null}]'
-        );
-    });
-
-    it('is parsing a simple let statement correctly', () => {
-        assert.equal(
-            JSON.stringify(parseCode('let low, high, mid;')),
-            '[{"line":1,"type":"Variable Declaration","name":"low","condition":null,"value":null},{"line":1,"type":"Variable Declaration","name":"high","condition":null,"value":null},{"line":1,"type":"Variable Declaration","name":"mid","condition":null,"value":null}]'
-        );
-    });
-    it('is parsing a simple while loop correctly', () => {
-        assert.equal(
-            JSON.stringify(parseCode('while (low <= high) {}')),
-            '[{"line":1,"type":"While Statement","name":null,"condition":"low<=high","value":null}]');
-    });
-    it('is parsing a simple for  correctly', () => {
-        assert.equal(
-            JSON.stringify(parseCode('for (let i = 0; i < 10; i++) {}' )),
-            '[{"line":1,"type":"For Statement","name":null,"condition":"let i = 0;i < 10;i++","value":null}]');
-    });
-    it('is parsing a simple for with no init correctly', () => {
-        assert.equal(
-            JSON.stringify(parseCode('for (; i < 10; i++) {}')),
-            '[{"line":1,"type":"For Statement","name":null,"condition":";i < 10;i++","value":null}]');
-    });
-    it('is parsing a simple forin  correctly', () => {
-        assert.equal(
-            JSON.stringify(parseCode('for (a in abc) {}' )),
-            '[{"line":1,"type":"ForIn Statement","name":null,"condition":"a in abc","value":null}]');
-    });
-    it('is parsing a simple if correctly', () => {
-        assert.equal(
-            JSON.stringify(parseCode('if (X < V[mid]) {}' )),
-            '[{"line":1,"type":"If Statement","name":null,"condition":"X<V[mid]","value":null}]');
-    });
-    it('is parsing a simple if else correctly', () => {
-        assert.equal(
-            JSON.stringify(parseCode('if (X < V[mid]) {\n' +
-                '}\n' +
-                'else if (n == 1) {}' )),
-            '[{"line":1,"type":"If Statement","name":null,"condition":"X<V[mid]","value":null},{"line":3,"type":"If Statement","name":null,"condition":"n==1","value":null}]');
-    });
-
-    it('is parsing a simple return correctly', () => {
-        assert.equal(
-            JSON.stringify(parseCode('function binarySearch(X, V, n){\n' +
-                'return -1;\n' +
-                '}' )),
-            '[{"line":1,"type":"FunctionDeclaration","name":"binarySearch","condition":null,"value":null},{"line":1,"type":"Variable Declaration","name":"X","condition":null,"value":null},{"line":1,"type":"Variable Declaration","name":"V","condition":null,"value":null},{"line":1,"type":"Variable Declaration","name":"n","condition":null,"value":null},{"line":2,"type":"Return Statement","name":null,"condition":null,"value":"-1"}]');
-    });
-    it('is parsing lecturers test correctly', () => {
-        assert.equal(
-            JSON.stringify(parseCode('function binarySearch(X, V, n){\n' +
-                '    let low, high, mid;\n' +
-                '    low = 0;\n' +
-                '    high = n - 1;\n' +
-                '    while (low <= high) {\n' +
-                '        mid = (low + high)/2;\n' +
-                '        if (X < V[mid])\n' +
-                '            high = mid - 1;\n' +
-                '        else if (X > V[mid])\n' +
-                '            low = mid + 1;\n' +
-                '        else\n' +
-                '            return mid;\n' +
+            parseCode('function foo(x, y, z){\n' +
+                '    let a = x + 1;\n' +
+                '    let b = a + y;\n' +
+                '    let c = 0;\n' +
+                '    \n' +
+                '    if (b < z) {\n' +
+                '        c = c + 5;\n' +
+                '        return x + y + z + c;\n' +
+                '    } else if (b < z * 2) {\n' +
+                '        c = c + x + 5;\n' +
+                '        return x + y + z + c;\n' +
+                '    } else {\n' +
+                '        c = c + z + 5;\n' +
+                '        return x + y + z + c;\n' +
                 '    }\n' +
-                '    return -1;\n' +
-                '}' )),
-            '[{"line":1,"type":"FunctionDeclaration","name":"binarySearch","condition":null,"value":null},{"line":1,"type":"Variable Declaration","name":"X","condition":null,"value":null},{"line":1,"type":"Variable Declaration","name":"V","condition":null,"value":null},{"line":1,"type":"Variable Declaration","name":"n","condition":null,"value":null},{"line":2,"type":"Variable Declaration","name":"low","condition":null,"value":null},{"line":2,"type":"Variable Declaration","name":"high","condition":null,"value":null},{"line":2,"type":"Variable Declaration","name":"mid","condition":null,"value":null},{"line":3,"type":"Assignment Expression","name":"low","condition":null,"value":"0"},{"line":4,"type":"Assignment Expression","name":"high","condition":null,"value":"n-1"},{"line":5,"type":"While Statement","name":null,"condition":"low<=high","value":null},{"line":6,"type":"Assignment Expression","name":"mid","condition":null,"value":"low+high/2"},{"line":7,"type":"If Statement","name":null,"condition":"X<V[mid]","value":null},{"line":8,"type":"Assignment Expression","name":"high","condition":null,"value":"mid-1"},{"line":9,"type":"If Statement","name":null,"condition":"X>V[mid]","value":null},{"line":10,"type":"Assignment Expression","name":"low","condition":null,"value":"mid+1"},{"line":12,"type":"Return Statement","name":null,"condition":null,"value":"mid"},{"line":14,"type":"Return Statement","name":null,"condition":null,"value":"-1"}]');
+                '}\n', '(x=1,y=2,z=3)'),
+            'function foo(x, y, z) {\n' +
+            '<highlight_red>    if (x + 1 + y < z) {</highlight_red>\n' +
+            '        return x + y + z + 0 + 5;\n' +
+            '<highlight_green>    } else if (x + 1 + y < z * 2) {</highlight_green>\n' +
+            '        return x + y + z + 0 + x + 5;\n' +
+            '    } else {\n' +
+            '        return x + y + z + 0 + z + 5;\n' +
+            '    }\n' +
+            '}'
+        );
+    });
+
+    it('is parsing an empty function correctly', () => {
+        assert.equal(
+            parseCode('function foo(x, y, z){\n' +
+                '    let a = x + 1;\n' +
+                '    let b = a + y;\n' +
+                '    let c = 0;\n' +
+                '    \n' +
+                '    while (a < z) {\n' +
+                '        c = a + b;\n' +
+                '        z = c * 2;\n' +
+                '    }\n' +
+                '    \n' +
+                '    return z;\n' +
+                '}\n', '(x=1,y=2,z=3)'),
+            'function foo(x, y, z) {\n' +
+            '    while (x + 1 < z) {\n' +
+            '        z = (x + 1 + x + 1 + y) * 2;\n' +
+            '    }\n' +
+            '    return z;\n' +
+            '}'
+        );
+    });
+
+    it('is parsing an empty function correctly', () => {
+        assert.equal(
+            parseCode('function f(x,y){\n' +
+                ' let a = 1;\n' +
+                ' x = y;\n' +
+                ' if(x > 1){\n' +
+                '  a = 7;}\n' +
+                ' else{\n' +
+                '  a = y;}\n' +
+                ' return a;\n' +
+                '}', '(x=1,y=2)'),
+            'function f(x, y) {\n' +
+            '    x = y;\n' +
+            '<highlight_green>    if (y > 1) {</highlight_green>\n' +
+            '    } else {\n' +
+            '    }\n' +
+            '    return 7;\n' +
+            '}'
+        );
+    });
+
+    it('is parsing an empty function correctly', () => {
+        assert.equal(
+            parseCode('function foo(x, y, z){\n' +
+                ' let a = 1;\n' +
+                ' z[0] = 4;\n' +
+                ' if(x == 1){\n' +
+                '  a = 3;\n' +
+                ' }\n' +
+                ' else{\n' +
+                '  a = 2;\n' +
+                ' }\n' +
+                '    return z + a;\n' +
+                '}', '(x=1,y=2,z=3)'),
+            'function foo(x, y, z) {\n' +
+            '<highlight_green>    if (x == 1) {</highlight_green>\n' +
+            '    } else {\n' +
+            '    }\n' +
+            '    return z + 3;\n' +
+            '}'
+        );
+    });
+
+    it('is parsing an empty function correctly', () => {
+        assert.equal(
+            parseCode('function foo(x, y, z){\n' +
+                ' let a = 1;\n' +
+                ' let arr = [1,2,3];\n' +
+                ' let b = z[2];\n' +
+                ' let c = a + 5 / 2 - 1 * 2;\n' +
+                ' z[1] = 2;\n' +
+                ' if (a == b){\n' +
+                '    a = b;\n' +
+                '    return b;\n' +
+                ' }\n' +
+                ' return a;\n' +
+                '}', '(x=1,y=2,z=3)'),
+            'function foo(x, y, z) {\n' +
+            '<highlight_red>    if (1 == z[2]) {</highlight_red>\n' +
+            '        return z[2];\n' +
+            '    }\n' +
+            '    return 1;\n' +
+            '}'
+        );
     });
 });

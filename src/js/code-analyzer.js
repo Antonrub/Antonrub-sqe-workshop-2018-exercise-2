@@ -58,9 +58,16 @@ const binary_exp_to_string = (env, parsedObject) => {
     let result = '';
     let left = stringifyExpression[parsedObject.left.type](env, parsedObject.left);
     let right = stringifyExpression[parsedObject.right.type](env, parsedObject.right);
-    result = (parsedObject.operator == '*' || parsedObject.operator == '/') && left.length > 1 ? result + '(' + left + ')' : result + left;
-    result = result + parsedObject.operator;
-    result = (parsedObject.operator == '*' || parsedObject.operator == '/') && right.length > 1 ? result + '(' + right + ')' : result + right;
+    if (parsedObject.operator == '*' || parsedObject.operator == '/'){
+        result = left.length > 1 ? result + '(' + left + ')' : result + left;
+        result = result + parsedObject.operator;
+        result = right.length > 1 ? result + '(' + right + ')' : result + right;
+    }
+    else
+        result = result + left + parsedObject.operator + right;
+    // result = (parsedObject.operator == '*' || parsedObject.operator == '/') && left.length > 1 ? result + '(' + left + ')' : result + left;
+    // result = result + parsedObject.operator;
+    // result = (parsedObject.operator == '*' || parsedObject.operator == '/') && right.length > 1 ? result + '(' + right + ')' : result + right;
     return result;
 };
 const unary_exp_to_string = (env, parsedObject) => {
@@ -79,7 +86,6 @@ const parse_while_statement = (env, parsedObject) => {
     let test = stringifyExpression[parsedObject.test.type](env, parsedObject.test);
     parsedObject.test = esprima.parseScript(test).body[0].expression;
     let evaluated_test = test_eval(test);
-    evaluated_test ? linesToColour.push(true) : linesToColour.push(false);
     let clonedEnv = clone_env(env);
     parseByFunc[parsedObject.body.type](clonedEnv, parsedObject.body);
     if (evaluated_test) {env[0] = tempEnv[0]; env[1] = tempEnv[1];}
@@ -91,7 +97,7 @@ const parse_if_statement = (env, parsedObject) => {
     let test = stringifyExpression[parsedObject.test.type](env, parsedObject.test);
     parsedObject.test = esprima.parseScript(test).body[0].expression;
     let evaluated_test = test_eval(test);
-    evaluated_test ? linesToColour.push(true) : linesToColour.push(false);
+    color_insert(evaluated_test);
     let clonedIfEnv = clone_env(env);
     parseByFunc[parsedObject.consequent.type](clonedIfEnv, parsedObject.consequent);
     if (evaluated_test) tempEnv = clonedIfEnv;
@@ -129,6 +135,7 @@ const stringify_array_expression = (env, parsedObject) => {
     result = result + parsedObject.elements[parsedObject.elements.length - 1].raw + ']';
     return result;
 };
+const color_insert = (test) => {test ? linesToColour.push(true) : linesToColour.push(false);};
 const test_eval = (test) => {return eval(coded_args + test);};
 const isArgument = (exp) => {
     return exp.type == 'Identifier' && args.has(exp.name);
@@ -165,8 +172,8 @@ const parseCode = (codeToParse, argumentsToUse) => {
     let splittedOutput = escodegen.generate(parsedObject).split('\n');
     let booleanLinesIndex = 0;
     for (let i = 0; i < splittedOutput.length; i++){
-        if (splittedOutput[i].includes('if') || splittedOutput[i].includes('while')) {
-            linesToColour[booleanLinesIndex] ? splittedOutput[i] = splittedOutput[i].fontcolor('green') : splittedOutput[i] = splittedOutput[i].fontcolor('red');
+        if (splittedOutput[i].includes('if')) {
+            linesToColour[booleanLinesIndex] ? splittedOutput[i] = '<highlight_green>' + splittedOutput[i] + '</highlight_green>' : splittedOutput[i] = '<highlight_red>' + splittedOutput[i] + '</highlight_red>';
             booleanLinesIndex++;
         }
     }
