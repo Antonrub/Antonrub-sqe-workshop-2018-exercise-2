@@ -12,11 +12,14 @@ let coded_args = '';
 let linesToColour = [];
 
 const parse_arguments = (input) => {
-    // console.log(input);
-    let parsed_args = esprima.parseScript(input);
-    // let parsed_args = esprima.parseScript('(x = 1, y = 2)');
-    args = new Map();
-    parsed_args.body[0].expression.expressions.map((x) => args.set(x.left.name, x.right.raw));
+    if (input == '()')
+        args = new Map();
+    else {
+        let parsed_args = esprima.parseScript(input);
+        args = new Map();
+        parsed_args.body[0].expression.expressions == undefined ? args.set(parsed_args.body[0].expression.left.name, escodegen.generate(parsed_args.body[0].expression.right)) :
+            parsed_args.body[0].expression.expressions.map((x) => args.set(x.left.name, x.right.raw));
+    }
 };
 const generate_coded_args = () => {
     for (let [k, v] of args){
@@ -65,9 +68,6 @@ const binary_exp_to_string = (env, parsedObject) => {
     }
     else
         result = result + left + parsedObject.operator + right;
-    // result = (parsedObject.operator == '*' || parsedObject.operator == '/') && left.length > 1 ? result + '(' + left + ')' : result + left;
-    // result = result + parsedObject.operator;
-    // result = (parsedObject.operator == '*' || parsedObject.operator == '/') && right.length > 1 ? result + '(' + right + ')' : result + right;
     return result;
 };
 const unary_exp_to_string = (env, parsedObject) => {
@@ -138,7 +138,15 @@ const stringify_array_expression = (env, parsedObject) => {
 const color_insert = (test) => {test ? linesToColour.push(true) : linesToColour.push(false);};
 const test_eval = (test) => {return eval(coded_args + test);};
 const isArgument = (exp) => {
-    return exp.type == 'Identifier' && args.has(exp.name);
+    if (exp.type == 'Identifier') return args.has(exp.name);
+    else {
+        // try{
+        return args.has(exp.object.name);
+        // }
+        // catch (e) {
+        //     return false;
+        // }
+    }
 };
 const parseByFunc = {
     'FunctionDeclaration' : parse_func_decl,
@@ -168,7 +176,7 @@ const parseCode = (codeToParse, argumentsToUse) => {
     generate_coded_args();
     let parsedObject = esprima.parseScript(codeToParse, {loc:true});
     parsedObject.body.map((x)=> parseByFunc[x.type](globalEnv, x));
-    parsedObject.body = parsedObject.body.filter((x)=>{return !((x.type == 'VariableDeclaration') || ((x.type == 'ExpressionStatement') && (x.expression.type == 'AssignmentExpression') && !isArgument(x.expression.left)));});
+    parsedObject.body = parsedObject.body.filter((x)=>{return !((x.type == 'VariableDeclaration') || (x.type == 'ExpressionStatement') );});
     let splittedOutput = escodegen.generate(parsedObject).split('\n');
     let booleanLinesIndex = 0;
     for (let i = 0; i < splittedOutput.length; i++){
@@ -195,6 +203,14 @@ const parseCode = (codeToParse, argumentsToUse) => {
 //     '        return x + y + z + c;\n' +
 //     '    }\n' +
 //     '}\n');
+
+// console.log(parseCode('function foo(z){ \n' +
+//     '  let q = 1;\n' +
+//     '  if (z[1] === q){\n' +
+//     '     return 5;\n' +
+//     '  }\n' +
+//     '  return q;\n' +
+//     '}','(z=[1,2,3])'));
 
 // module.exports = (parseCode);
 export {parseCode};
