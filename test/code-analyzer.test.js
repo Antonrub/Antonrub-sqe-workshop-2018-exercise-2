@@ -106,7 +106,7 @@ describe('The javascript parser', () => {
                 '}', '(x=1,y=2)'),
             'function f(x, y) {\n' +
             '    x = y;\n' +
-            '<highlight_green>    if (y > 1) {</highlight_green>\n' +
+            '<highlight_green>    if (x > 1) {</highlight_green>\n' +
             '    } else {\n' +
             '    }\n' +
             '    return 7;\n' +
@@ -194,6 +194,7 @@ describe('The javascript parser', () => {
         assert.equal(
             parseCode('function foo(z){ \n' +
                 '  let q = 1;\n' +
+                '  let a = b;\n' +
                 '  if (z[0] === q){\n' +
                 '     return 5;\n' +
                 '  }\n' +

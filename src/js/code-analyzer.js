@@ -18,7 +18,7 @@ const parse_arguments = (input) => {
         let parsed_args = esprima.parseScript(input);
         args = new Map();
         parsed_args.body[0].expression.expressions == undefined ? args.set(parsed_args.body[0].expression.left.name, escodegen.generate(parsed_args.body[0].expression.right)) :
-            parsed_args.body[0].expression.expressions.map((x) => args.set(x.left.name, x.right.raw));
+            parsed_args.body[0].expression.expressions.map((x) => args.set(x.left.name, escodegen.generate(x.right)));
     }
 };
 const generate_coded_args = () => {
@@ -79,8 +79,15 @@ const parse_expression_statement = (env, parsedObject) => {
 const parse_assignment_expression = (env, parsedObject) => {
     let right_side = parseByFunc['AssignmentExpressionRightSide'](env, parsedObject.right);
     parsedObject.right = esprima.parseScript(right_side).body[0].expression;
-    env[1].push(parseByFunc['AssignmentExpressionRightSide'](env, parsedObject.right));
-    env[0].push(parsedObject.left.name);
+    let rval = parseByFunc['AssignmentExpressionRightSide'](env, parsedObject.right);
+    env[1].push(rval);
+    let lvar = parsedObject.left.name;
+    env[0].push(lvar);
+    // env[1].push(parseByFunc['AssignmentExpressionRightSide'](env, parsedObject.right));
+    // env[0].push(parsedObject.left.name);
+    if (args.has(parsedObject.left.name)){
+        coded_args = coded_args + lvar + '=' + rval + ';\n';
+    }
 };
 const parse_while_statement = (env, parsedObject) => {
     let test = stringifyExpression[parsedObject.test.type](env, parsedObject.test);
@@ -119,8 +126,12 @@ const stringify_literal_expression = (env, parsedObject) => {
     return parsedObject.raw;
 };
 const stringify_identifier_expression = (env, parsedObject) => {
-    let idx = env[0].lastIndexOf(parsedObject.name);
-    return idx == -1 ? parsedObject.name : env[1][idx];
+    if (args.has(parsedObject.name))
+        return parsedObject.name;
+    else {
+        let idx = env[0].lastIndexOf(parsedObject.name);
+        return idx == -1 ? parsedObject.name : env[1][idx];
+    }
 };
 const stringify_member_expression = (env, parsedObject) => {
     return member_exp_to_string(env, parsedObject);
@@ -136,7 +147,9 @@ const stringify_array_expression = (env, parsedObject) => {
     return result;
 };
 const color_insert = (test) => {test ? linesToColour.push(true) : linesToColour.push(false);};
-const test_eval = (test) => {return eval(coded_args + test);};
+const test_eval = (test) => {
+    return eval(coded_args + test);
+};
 const isArgument = (exp) => {
     if (exp.type == 'Identifier') return args.has(exp.name);
     else {
@@ -204,13 +217,24 @@ const parseCode = (codeToParse, argumentsToUse) => {
 //     '    }\n' +
 //     '}\n');
 
-// console.log(parseCode('function foo(z){ \n' +
-//     '  let q = 1;\n' +
-//     '  if (z[1] === q){\n' +
-//     '     return 5;\n' +
-//     '  }\n' +
-//     '  return q;\n' +
-//     '}','(z=[1,2,3])'));
+// console.log(parseCode('function binarySearch(X, V, n){\n' +
+//     '    let low, high, mid;\n' +
+//     '    low = 0;\n' +
+//     '    high = n - 1;\n' +
+//     '    while (low <= high) {\n' +
+//     '        mid = (low + high)/2;\n' +
+//     '        if (X < V[mid]){\n' +
+//     '            high = mid - 1;\n' +
+//     '        }\n' +
+//     '        else if (X > V[mid]){\n' +
+//     '            low = mid + 1;\n' +
+//     '        }\n' +
+//     '        else{\n' +
+//     '            return mid;\n' +
+//     '        }\n' +
+//     '    }\n' +
+//     '    return -1;\n' +
+//     '}','(X=10,V=[10,20,30], n=3)'));
 
 // module.exports = (parseCode);
 export {parseCode};
