@@ -1,9 +1,6 @@
 import * as esprima from 'esprima';
 import * as escodegen from 'escodegen';
 import * as format from 'string-format';
-// let esprima = require ('esprima');
-// let escodegen = require ('escodegen');
-// let format = require('string-format');
 
 let globalEnv = [[],[]];
 let tempEnv = [[],[]];
@@ -28,10 +25,6 @@ const generate_coded_args = () => {
 };
 const clone_env = (env) => {return [env[0].slice(0), env[1].slice(0)];};
 const parse_func_decl = (env, parsedObject) =>{
-    // let param;
-    // for(param in parsedObject.params){
-    //     chart.push(new ChartLine(parsedObject.params[param].loc.start.line, 'Variable Declaration', parsedObject.params[param].name, null, null));
-    // }
     parseByFunc['BlockStatement'](env, parsedObject.body);
 };
 const parse_block_statement = (env, parsedObject) => {
@@ -83,8 +76,6 @@ const parse_assignment_expression = (env, parsedObject) => {
     env[1].push(rval);
     let lvar = parsedObject.left.name;
     env[0].push(lvar);
-    // env[1].push(parseByFunc['AssignmentExpressionRightSide'](env, parsedObject.right));
-    // env[0].push(parsedObject.left.name);
     if (args.has(parsedObject.left.name)){
         coded_args = coded_args + lvar + '=' + rval + ';\n';
     }
@@ -153,12 +144,7 @@ const test_eval = (test) => {
 const isArgument = (exp) => {
     if (exp.type == 'Identifier') return args.has(exp.name);
     else {
-        // try{
         return args.has(exp.object.name);
-        // }
-        // catch (e) {
-        //     return false;
-        // }
     }
 };
 const parseByFunc = {
@@ -200,41 +186,6 @@ const parseCode = (codeToParse, argumentsToUse) => {
     }
     return splittedOutput.join('\n');
 };
-// parseCode('function foo(x, y, z){\n' +
-//     '    let a = x + 1;\n' +
-//     '    let b = a + y;\n' +
-//     '    let c = 0;\n' +
-//     '    \n' +
-//     '    if (b < z) {\n' +
-//     '        c = c + 5;\n' +
-//     '        return x + y + z + c;\n' +
-//     '    } else if (b < z * 2) {\n' +
-//     '        c = c + x + 5;\n' +
-//     '        return x + y + z + c;\n' +
-//     '    } else {\n' +
-//     '        c = c + z + 5;\n' +
-//     '        return x + y + z + c;\n' +
-//     '    }\n' +
-//     '}\n');
 
-// console.log(parseCode('function binarySearch(X, V, n){\n' +
-//     '    let low, high, mid;\n' +
-//     '    low = 0;\n' +
-//     '    high = n - 1;\n' +
-//     '    while (low <= high) {\n' +
-//     '        mid = (low + high)/2;\n' +
-//     '        if (X < V[mid]){\n' +
-//     '            high = mid - 1;\n' +
-//     '        }\n' +
-//     '        else if (X > V[mid]){\n' +
-//     '            low = mid + 1;\n' +
-//     '        }\n' +
-//     '        else{\n' +
-//     '            return mid;\n' +
-//     '        }\n' +
-//     '    }\n' +
-//     '    return -1;\n' +
-//     '}','(X=10,V=[10,20,30], n=3)'));
 
-// module.exports = (parseCode);
 export {parseCode};
